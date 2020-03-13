@@ -71,11 +71,31 @@ router.get('/api/projects/:id/actions', (req, res) => {
   .catch(err => res.status(500).json({ error: "Error fetching actions!" }))
 });
 
+
 router.get('/api/actions/', (req, res) => {
     Actions.get(req.params.id)
   .then(actions => res.status(200).json(actions))
   .catch(err => res.status(500).json({ error: "Error fetching users!" }))
 });
+
+
+router.post('/api/actions/', (req, res) => {
+    Actions.insert(req.body)
+    .then(actions => {
+      res.status(201).json(actions);
+    })
+    .catch(error => {
+      // log error to database
+      console.log(error);
+      res.status(500).json({
+        message: 'Error adding the Actions database!',
+      });
+    });
+  });
+
+
+
+
 
 
 module.exports = router;
