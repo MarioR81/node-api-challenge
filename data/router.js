@@ -12,7 +12,7 @@ router.get('/api/projects/', (req, res) => {
   .catch(err => res.status(500).json({ error: "Error fetching project!" }))
 });
 
-router.post('/api/projects/', (req, res) => {
+router.post('/api/projects/', validateProject, (req, res) => {
     Projects.insert(req.body)
     .then(project => {
       res.status(201).json(project);
@@ -27,7 +27,7 @@ router.post('/api/projects/', (req, res) => {
   });
 
   
-router.put('/api/projects/:id', (req, res) => {
+router.put('/api/projects/:id', validateProjectId, (req, res) => {
     const id = req.params.id;
     const updates = req.body;
   
@@ -50,7 +50,7 @@ router.put('/api/projects/:id', (req, res) => {
   });
 
 
-router.delete('/api/projects/:id', (req, res) => {
+router.delete('/api/projects/:id', validateProjectId, (req, res) => {
     Projects.remove(req.params.id)
     .then(project => {
       if(project > 0){
@@ -63,7 +63,7 @@ router.delete('/api/projects/:id', (req, res) => {
   });
 
 
-router.get('/api/projects/:id/actions', (req, res) => {
+router.get('/api/projects/:id/actions', validateAction, (req, res) => {
     Projects.getProjectActions(req.params.id)
     .then(actions => {
       if(actions){
@@ -76,7 +76,7 @@ router.get('/api/projects/:id/actions', (req, res) => {
   });
 
 
-router.get('/api/actions/', (req, res) => {
+router.get('/api/actions/', validateAction, (req, res) => {
     Actions.get(req.params.id)
   .then(actions => res.status(200).json(actions))
   .catch(err => res.status(500).json({ error: "Error fetching users!" }))
@@ -98,7 +98,7 @@ router.post('/api/actions/', (req, res) => {
   });
 
 
-router.put('/api/actions/:id', (req, res) => {
+router.put('/api/actions/:id', validateActionId, (req, res) => {
     const id = req.params.id;
     const updates = req.body;
   
@@ -121,7 +121,7 @@ router.put('/api/actions/:id', (req, res) => {
   });
 
 
-router.delete('/api/actions/:id', (req, res) => {
+router.delete('/api/actions/:id', validateActionId, (req, res) => {
     Actions.remove(req.params.id)
     .then(actions => {
       if(actions > 0){
@@ -140,29 +140,28 @@ router.delete('/api/actions/:id', (req, res) => {
 
 function validateProjectId(req, res, next) {
     const {id} = req.params;
-  
     Projects.get(id)
     .then(projectId => {
       if(projectId){
         projectId = req.project;
         next();
       }else{
-        res.status(400).json({error: "Invalid project id"})
+        res.status(400).json({error: "Invalid project id!"})
       }
     })
     .catch (err =>{
-      console.log(res.status(500).json({error: "There was an error validating the project id", err}))
+      console.log(res.status(500).json({error: "Error validating the project id!", err}))
     })
   }
   
 function validateProject(req, res, next) {
     const project = req.body;
     if (!project) {
-      res.status(400).json({ message: "Missing project data" });
+      res.status(400).json({ message: "Missing project data!" });
     } else if (!project.name) {
-      res.status(400).json({ message: "Missing required name field" });
+      res.status(400).json({ message: "Missing required data!" });
     } else if (!project.description) {
-      res.status(400).json({ message: "Missing required description field" });
+      res.status(400).json({ message: "Missing required description!" });
     } else {
       next();
     }
@@ -172,7 +171,7 @@ function validateAction(req, res, next) {
     // do your magic!
     const action = req.body;
     if (!action) {
-      res.status(400).json({ message: "Missing action data" });
+      res.status(400).json({ message: "Missing actions data!" });
     } else if (!action.project_id) {
       res.status(400).json({ message: "Missing required project_id field" });
     } else if (!action.description) {
@@ -184,6 +183,25 @@ function validateAction(req, res, next) {
     } else {
       next();
     }
+  }
+
+  function validateActionId(req, res, next) {
+    // do your magic!
+    const {id} = req.params.id;
+  
+    Actions.get(id)
+      .then(action => {
+        if(action){
+          actionId = id;
+          next();
+        } else {
+          res.status(400).json({ errorMessage: "Invalid action id."})
+        }
+      })
+      .catch(err => {
+        console.log(err)
+        res.status(500).json({errorMessage: "Error validation action id."})
+      })
   }
 
 module.exports = router;
