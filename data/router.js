@@ -94,6 +94,27 @@ router.post('/api/actions/', (req, res) => {
   });
 
 
+router.put('/api/actions/:id', (req, res) => {
+    const id = req.params.id;
+    const updates = req.body;
+  
+    if(!updates){
+      res.status(400).json({error: "Name field is required"})
+    }
+  
+    Actions.update(id, updates)
+    .then(actions => {
+      if(actions){
+        res.status(200).json({message: "Actions updated successfully"});
+      } else {
+        res.status(404).json({error: "No action with that id exists"})
+      }
+    })
+    .catch(err => {
+      res.status(500).json({error: "Error updating user"})
+      console.log(err)
+    })
+  });
 
 
 
