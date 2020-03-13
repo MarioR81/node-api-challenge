@@ -26,7 +26,7 @@ router.post('/', (req, res) => {
   });
 
   
-  router.put('/:id', (req, res) => {
+router.put('/:id', (req, res) => {
     // do your magic!
     const id = req.params.id;
     const updates = req.body;
@@ -47,6 +47,19 @@ router.post('/', (req, res) => {
       res.status(500).json({error: "Error updating user"})
       console.log(err)
     })
+  });
+
+
+router.delete('/:id', (req, res) => {
+    Projects.remove(req.params.id)
+    .then(project => {
+      if(project > 0){
+        res.status(200).json({message: "Project deleted"})
+      } else {
+        res.status(400).json({error: "Project could not be deleted"})
+      }
+    })
+    .catch(err => res.status(500).json({error: "Error deleting Project"}))
   });
 
 module.exports = router;
