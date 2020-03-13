@@ -25,4 +25,28 @@ router.post('/', (req, res) => {
     });
   });
 
+  
+  router.put('/:id', (req, res) => {
+    // do your magic!
+    const id = req.params.id;
+    const updates = req.body;
+  
+    if(!updates){
+      res.status(400).json({error: "Name field is required"})
+    }
+  
+    Projects.update(id, updates)
+    .then(project => {
+      if(project){
+        res.status(200).json({message: "Project updated successfully"});
+      } else {
+        res.status(404).json({error: "No project with that id exists"})
+      }
+    })
+    .catch(err => {
+      res.status(500).json({error: "Error updating user"})
+      console.log(err)
+    })
+  });
+
 module.exports = router;
