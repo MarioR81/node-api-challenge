@@ -9,7 +9,7 @@ const Actions = require('./helpers/actionModel.js');
 router.get('/api/projects/', (req, res) => {
     Projects.get(req.params.id)
   .then(project => res.status(200).json(project))
-  .catch(err => res.status(500).json({ error: "Error fetching users!" }))
+  .catch(err => res.status(500).json({ error: "Error fetching project!" }))
 });
 
 router.post('/api/projects/', (req, res) => {
@@ -28,12 +28,11 @@ router.post('/api/projects/', (req, res) => {
 
   
 router.put('/api/projects/:id', (req, res) => {
-    // do your magic!
     const id = req.params.id;
     const updates = req.body;
   
     if(!updates){
-      res.status(400).json({error: "Name field is required"})
+      res.status(400).json({error: "Updates are required"})
     }
   
     Projects.update(id, updates)
@@ -65,11 +64,16 @@ router.delete('/api/projects/:id', (req, res) => {
 
 
 router.get('/api/projects/:id/actions', (req, res) => {
-    // console.log(req.paramps.id)
-    Projects.getProjectActions(req.params.project_id)
-  .then(actions => res.status(200).json(actions))
-  .catch(err => res.status(500).json({ error: "Error fetching actions!" }))
-});
+    Projects.getProjectActions(req.params.id)
+    .then(actions => {
+      if(actions){
+        res.status(200).json(actions)
+      } else {
+        res.status(400).json({error: "Invalid project id"})
+      }
+    })
+    .catch(err => res.status(500).json({error: "Error fetching project actions"}))
+  });
 
 
 router.get('/api/actions/', (req, res) => {
@@ -117,6 +121,69 @@ router.put('/api/actions/:id', (req, res) => {
   });
 
 
+router.delete('/api/actions/:id', (req, res) => {
+    Actions.remove(req.params.id)
+    .then(actions => {
+      if(actions > 0){
+        res.status(200).json({message: "Action deleted"})
+      } else {
+        res.status(400).json({error: "Action could not be deleted"})
+      }
+    })
+    .catch(err => res.status(500).json({error: "Error deleting Action"}))
+  });
 
+
+
+
+//custom middleware
+
+function validateProjectId(req, res, next) {
+    const {id} = req.params;
+  
+    Projects.get(id)
+    .then(projectId => {
+      if(projectId){
+        projectId = req.project;
+        next();
+      }else{
+        res.status(400).json({error: "Invalid project id"})
+      }
+    })
+    .catch (err =>{
+      console.log(res.status(500).json({error: "There was an error validating the project id", err}))
+    })
+  }
+  
+function validateProject(req, res, next) {
+    const project = req.body;
+    if (!project) {
+      res.status(400).json({ message: "Missing project data" });
+    } else if (!project.name) {
+      res.status(400).json({ message: "Missing required name field" });
+    } else if (!project.description) {
+      res.status(400).json({ message: "Missing required description field" });
+    } else {
+      next();
+    }
+  }
+  
+function validateAction(req, res, next) {
+    // do your magic!
+    const action = req.body;
+    if (!action) {
+      res.status(400).json({ message: "Missing action data" });
+    } else if (!action.project_id) {
+      res.status(400).json({ message: "Missing required project_id field" });
+    } else if (!action.description) {
+      res.status(400).json({ message: "Missing required description field" });
+    } else if (!action.notes) {
+      res.status(400).json({ message: "Missing required notes field" });
+    } else if (req.body.description.length > 128){
+      res.status(400).json({error: "Project description length cannot exceed 128 characters."});
+    } else {
+      next();
+    }
+  }
 
 module.exports = router;
