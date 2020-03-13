@@ -9,7 +9,7 @@ server.get('/', (req, res) => {
     res.send('<h1>Welcome to the API Thunderdome!</h1>')
 })
 
-server.use('/api/projects', router);
+server.use(router);
 
 
 module.exports = server;

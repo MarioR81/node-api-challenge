@@ -3,15 +3,16 @@ const express = require('express');
 const router = express.Router();
 
 const Projects = require('./helpers/projectModel.js');
+const Actions = require('./helpers/actionModel.js');
 
 
-router.get('/', (req, res) => {
+router.get('/api/projects/', (req, res) => {
     Projects.get(req.params.id)
   .then(project => res.status(200).json(project))
   .catch(err => res.status(500).json({ error: "Error fetching users!" }))
 });
 
-router.post('/', (req, res) => {
+router.post('/api/projects/', (req, res) => {
     Projects.insert(req.body)
     .then(project => {
       res.status(201).json(project);
@@ -26,7 +27,7 @@ router.post('/', (req, res) => {
   });
 
   
-router.put('/:id', (req, res) => {
+router.put('/api/projects/:id', (req, res) => {
     // do your magic!
     const id = req.params.id;
     const updates = req.body;
@@ -50,7 +51,7 @@ router.put('/:id', (req, res) => {
   });
 
 
-router.delete('/:id', (req, res) => {
+router.delete('/api/projects/:id', (req, res) => {
     Projects.remove(req.params.id)
     .then(project => {
       if(project > 0){
@@ -61,5 +62,20 @@ router.delete('/:id', (req, res) => {
     })
     .catch(err => res.status(500).json({error: "Error deleting Project"}))
   });
+
+
+router.get('/api/projects/:id/actions', (req, res) => {
+    // console.log(req.paramps.id)
+    Projects.getProjectActions(req.params.project_id)
+  .then(actions => res.status(200).json(actions))
+  .catch(err => res.status(500).json({ error: "Error fetching actions!" }))
+});
+
+router.get('/api/actions/', (req, res) => {
+    Actions.get(req.params.id)
+  .then(actions => res.status(200).json(actions))
+  .catch(err => res.status(500).json({ error: "Error fetching users!" }))
+});
+
 
 module.exports = router;
